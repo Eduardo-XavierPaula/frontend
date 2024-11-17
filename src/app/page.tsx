@@ -1,101 +1,151 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+	const [produto, setProduto] = useState<any>({});
+	const [produtos, setProdutos] = useState<any>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+	useEffect(() => {
+		obterProdutos();
+	}, []);
+
+	async function obterProdutos() {
+		const resp = await fetch("http://localhost:3001/produtos");
+		const produtos = await resp.json();
+		setProdutos(produtos);
+	}
+
+	async function criarProduto() {
+		console.log(produto);
+		await fetch("http://localhost:3001/produtos", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(produto),
+		});
+		setProduto({});
+		await obterProdutos();
+	}
+	async function alterarProduto(id: number) {
+		await fetch(`http://localhost:3001/produtos/${id}`, {
+			method: "PATCH",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(produto),
+		});
+		setProduto({});
+		await obterProdutos();
+	}
+	async function obterProdutoPorId(id: number) {
+		const resp = await fetch(`http://localhost:3001/produtos/${id}`);
+		const produto = await resp.json();
+		setProduto(produto);
+	}
+	async function excluirProduto(id: number) {
+		console.log(produto);
+		await fetch(`http://localhost:3001/produtos/${id}`, {
+			method: "DELETE",
+		});
+		await obterProdutos();
+	}
+
+	function renderizarFormProduto() {
+		return (
+			<div className="flex gap-5 items-end">
+				<div className="flex flex-col">
+					<label htmlFor="nome">Nome</label>
+					<input
+						id="nome"
+						placeholder="Digite o nome do produto"
+						type="text"
+						value={produto.nome ?? ""}
+						onChange={(e) => setProduto({ ...produto, nome: e.target.value })}
+						className="bg-zinc-700 p-2 rounded-md"
+					/>
+				</div>
+				<div className="flex flex-col">
+					<label htmlFor="descricao">Descrição</label>
+					<input
+						id="descricao"
+						placeholder="Digite a descrição do produto"
+						type="text"
+						value={produto.descricao ?? ""}
+						onChange={(e) =>
+							setProduto({ ...produto, descricao: e.target.value })
+						}
+						className="bg-zinc-700 p-2 rounded-md"
+					/>
+				</div>
+				<div className="flex flex-col">
+					<label htmlFor="preco">Preço</label>
+					<input
+						id="preco"
+						placeholder="Digite a preço do produto"
+						type="number"
+						value={produto.preco ?? 0}
+						onChange={(e) =>
+							setProduto({ ...produto, preco: Number(e.target.value) })
+						}
+						className="bg-zinc-700 p-2 rounded-md"
+					/>
+				</div>
+				<div>
+					{produto.id ? (
+						<button
+							className="bg-blue-500 py-2 px-4 rounded-md"
+							onClick={() => alterarProduto(produto.id)}
+						>
+							Alterar Produto
+						</button>
+					) : (
+						<button
+							className="bg-blue-500 py-2 px-4 rounded-md"
+							onClick={criarProduto}
+						>
+							Criar Produto
+						</button>
+					)}
+				</div>
+			</div>
+		);
+	}
+
+	function renderizarProdutos() {
+		return (
+			<div className="flex flex-col gap-2">
+				{produtos.map((produto: any) => (
+					<div
+						key={produto.id}
+						className="flex gap-2 bg-zinc-800 px-4 py-2 rounded-md items-center"
+					>
+						<h3>{produto.nome}</h3>
+						<div className="flex-1">{produto.descricao}</div>
+						<div>R$ {produto.preco}</div>
+						<div>
+							<button
+								className="bg-green-500 p-2 rounded-md"
+								onClick={() => obterProdutoPorId(produto.id)}
+							>
+								Alterar
+							</button>
+							<button
+								className="bg-red-500 p-2 rounded-md"
+								onClick={() => excluirProduto(produto.id)}
+							>
+								Excluir
+							</button>
+						</div>
+					</div>
+				))}
+			</div>
+		);
+	}
+	return (
+		<div className="flex flex-col justify-center items-center h-screen gap-10">
+			{renderizarFormProduto()}
+			{renderizarProdutos()}
+		</div>
+	);
 }
