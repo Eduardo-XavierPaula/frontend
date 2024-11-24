@@ -1,48 +1,83 @@
 "use client";
 import { useEffect, useState } from "react";
+import { FaPlusCircle } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import { IProduct } from "@/interfaces/product.interface";
+import { ProductResponse } from "@/types/products-response";
+import ProductForm from "@/components/templates/productForm";
+import ProductTable from "@/components/templates/productTable";
 
 export default function Home() {
-	const [produto, setProduto] = useState<any>({});
-	const [produtos, setProdutos] = useState<any>([]);
+	const [produto, setProduto] = useState<Partial<IProduct>>({});
+	const [produtos, setProdutos] = useState<ProductResponse>([]);
+
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	useEffect(() => {
 		obterProdutos();
 	}, []);
 
 	async function obterProdutos() {
-		const resp = await fetch("http://localhost:3001/produtos");
-		const produtos = await resp.json();
-		setProdutos(produtos);
+		try {
+			const resp = await fetch("http://localhost:3001/produtos");
+			const produtos = await resp.json();
+			setProdutos(produtos);
+		} catch (err) {
+			console.error("Erro ao obter produtos:", err);
+		}
 	}
 
-	async function criarProduto() {
-		console.log(produto);
-		await fetch("http://localhost:3001/produtos", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(produto),
-		});
-		setProduto({});
-		await obterProdutos();
+	async function criarProduto(produto: Partial<IProduct>) {
+		try {
+			await fetch("http://localhost:3001/produtos", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(produto),
+			});
+			await obterProdutos();
+			setIsModalOpen(false);
+		} catch (err) {
+			console.error("Erro ao criar produto:", err);
+		}
 	}
-	async function alterarProduto(id: number) {
-		await fetch(`http://localhost:3001/produtos/${id}`, {
-			method: "PATCH",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(produto),
-		});
-		setProduto({});
-		await obterProdutos();
+	async function alterarProduto(produto: Partial<IProduct>) {
+		try {
+			await fetch(`http://localhost:3001/produtos/${produto.id}`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(produto),
+			});
+			setProduto({});
+			await obterProdutos();
+			setIsModalOpen(false);
+		} catch (err) {
+			console.error("Erro ao alterar produto:", err);
+		}
 	}
+
 	async function obterProdutoPorId(id: number) {
-		const resp = await fetch(`http://localhost:3001/produtos/${id}`);
-		const produto = await resp.json();
-		setProduto(produto);
+		try {
+			const resp = await fetch(`http://localhost:3001/produtos/${id}`);
+			const produto = await resp.json();
+			setProduto(produto);
+			setIsModalOpen(true);
+		} catch (err) {
+			console.error("Erro ao buscar produto:", err);
+		}
 	}
+
 	async function excluirProduto(id: number) {
 		console.log(produto);
 		await fetch(`http://localhost:3001/produtos/${id}`, {
@@ -51,101 +86,44 @@ export default function Home() {
 		await obterProdutos();
 	}
 
-	function renderizarFormProduto() {
-		return (
-			<div className="flex gap-5 items-end">
-				<div className="flex flex-col">
-					<label htmlFor="nome">Nome</label>
-					<input
-						id="nome"
-						placeholder="Digite o nome do produto"
-						type="text"
-						value={produto.nome ?? ""}
-						onChange={(e) => setProduto({ ...produto, nome: e.target.value })}
-						className="bg-zinc-700 p-2 rounded-md"
-					/>
-				</div>
-				<div className="flex flex-col">
-					<label htmlFor="descricao">Descrição</label>
-					<input
-						id="descricao"
-						placeholder="Digite a descrição do produto"
-						type="text"
-						value={produto.descricao ?? ""}
-						onChange={(e) =>
-							setProduto({ ...produto, descricao: e.target.value })
-						}
-						className="bg-zinc-700 p-2 rounded-md"
-					/>
-				</div>
-				<div className="flex flex-col">
-					<label htmlFor="preco">Preço</label>
-					<input
-						id="preco"
-						placeholder="Digite a preço do produto"
-						type="number"
-						value={produto.preco ?? 0}
-						onChange={(e) =>
-							setProduto({ ...produto, preco: Number(e.target.value) })
-						}
-						className="bg-zinc-700 p-2 rounded-md"
-					/>
-				</div>
-				<div>
-					{produto.id ? (
-						<button
-							className="bg-blue-500 py-2 px-4 rounded-md"
-							onClick={() => alterarProduto(produto.id)}
-						>
-							Alterar Produto
-						</button>
-					) : (
-						<button
-							className="bg-blue-500 py-2 px-4 rounded-md"
-							onClick={criarProduto}
-						>
-							Criar Produto
-						</button>
-					)}
-				</div>
-			</div>
-		);
+	function handleFormSubmit(produto: Partial<IProduct>) {
+		if (produto.id) {
+			alterarProduto(produto);
+		} else {
+			criarProduto(produto);
+		}
 	}
 
-	function renderizarProdutos() {
-		return (
-			<div className="flex flex-col gap-2">
-				{produtos.map((produto: any) => (
-					<div
-						key={produto.id}
-						className="flex gap-2 bg-zinc-800 px-4 py-2 rounded-md items-center"
-					>
-						<h3>{produto.nome}</h3>
-						<div className="flex-1">{produto.descricao}</div>
-						<div>R$ {produto.preco}</div>
-						<div>
-							<button
-								className="bg-green-500 p-2 rounded-md"
-								onClick={() => obterProdutoPorId(produto.id)}
-							>
-								Alterar
-							</button>
-							<button
-								className="bg-red-500 p-2 rounded-md"
-								onClick={() => excluirProduto(produto.id)}
-							>
-								Excluir
-							</button>
-						</div>
-					</div>
-				))}
-			</div>
-		);
-	}
 	return (
-		<div className="flex flex-col justify-center items-center h-screen gap-10">
-			{renderizarFormProduto()}
-			{renderizarProdutos()}
+		<div className="container mx-auto p-4">
+			<div className="flex justify-between items-center mb-4">
+				<h1 className="text-2xl font-bold">Lista de Produtos</h1>
+				<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+					<DialogTrigger asChild>
+						<Button title="Novo Produto" onClick={() => setProduto({})}>
+							<FaPlusCircle size={16} /> Novo Produto
+						</Button>
+					</DialogTrigger>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>
+								{produto.id ? "Editar Produto" : "Adicionar Produto"}
+							</DialogTitle>
+						</DialogHeader>
+						<DialogDescription className="hidden">
+							{produto.id
+								? "Edite os detalhes do produto."
+								: "Preencha as informações para adicionar um novo produto."}
+						</DialogDescription>
+						<ProductForm produto={produto} onSubmit={handleFormSubmit} />
+					</DialogContent>
+				</Dialog>
+			</div>
+			<ProductTable
+				produtos={produtos}
+				onEdit={obterProdutoPorId}
+				onDelete={excluirProduto}
+			/>
 		</div>
 	);
 }
