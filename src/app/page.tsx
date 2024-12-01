@@ -27,6 +27,7 @@ export default function Home() {
 	}, []);
 
 	async function obterProdutos() {
+		console.log("aqui");
 		console.log(process.env.NEXT_PUBLIC_BASE_URL);
 		setIsLoading(true);
 		try {
