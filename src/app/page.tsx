@@ -44,7 +44,6 @@ export default function Home() {
 		try {
 			await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}`, {
 				method: "POST",
-				mode: "no-cors",
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -60,7 +59,6 @@ export default function Home() {
 		try {
 			await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/${produto.id}`, {
 				method: "PATCH",
-				mode: "no-cors",
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -88,7 +86,6 @@ export default function Home() {
 	async function excluirProduto(id: number) {
 		console.log(produto);
 		await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/${id}`, {
-			mode: "no-cors",
 			method: "DELETE",
 		});
 		await obterProdutos();
