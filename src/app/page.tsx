@@ -20,24 +20,27 @@ export default function Home() {
 	const [produtos, setProdutos] = useState<ProductResponse>([]);
 
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
 		obterProdutos();
 	}, []);
 
 	async function obterProdutos() {
+		setIsLoading(true);
 		try {
-			const resp = await fetch("http://localhost:3001/produtos");
+			const resp = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}`);
 			const produtos = await resp.json();
 			setProdutos(produtos);
 		} catch (err) {
 			console.error("Erro ao obter produtos:", err);
 		}
+		setIsLoading(false);
 	}
 
 	async function criarProduto(produto: Partial<IProduct>) {
 		try {
-			await fetch("http://localhost:3001/produtos", {
+			await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -52,7 +55,7 @@ export default function Home() {
 	}
 	async function alterarProduto(produto: Partial<IProduct>) {
 		try {
-			await fetch(`http://localhost:3001/produtos/${produto.id}`, {
+			await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/${produto.id}`, {
 				method: "PATCH",
 				headers: {
 					"Content-Type": "application/json",
@@ -69,7 +72,7 @@ export default function Home() {
 
 	async function obterProdutoPorId(id: number) {
 		try {
-			const resp = await fetch(`http://localhost:3001/produtos/${id}`);
+			const resp = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/${id}`);
 			const produto = await resp.json();
 			setProduto(produto);
 			setIsModalOpen(true);
@@ -80,7 +83,7 @@ export default function Home() {
 
 	async function excluirProduto(id: number) {
 		console.log(produto);
-		await fetch(`http://localhost:3001/produtos/${id}`, {
+		await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/${id}`, {
 			method: "DELETE",
 		});
 		await obterProdutos();
@@ -121,6 +124,7 @@ export default function Home() {
 			</div>
 			<ProductTable
 				produtos={produtos}
+				isLoading={isLoading}
 				onEdit={obterProdutoPorId}
 				onDelete={excluirProduto}
 			/>

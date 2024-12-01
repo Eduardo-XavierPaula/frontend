@@ -9,15 +9,18 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { ProductResponse } from "@/types/products-response";
+import { currencyFormatter } from "@/functions/currency_formatter";
 
 interface ProductTableProps {
 	produtos: ProductResponse;
+	isLoading: boolean;
 	onEdit: (id: number) => void;
 	onDelete: (id: number) => void;
 }
 
 export default function ProductTable({
 	produtos,
+	isLoading,
 	onEdit,
 	onDelete,
 }: ProductTableProps) {
@@ -38,7 +41,9 @@ export default function ProductTable({
 						<TableRow key={produto.id}>
 							<TableCell>{produto.nome}</TableCell>
 							<TableCell>{produto.descricao}</TableCell>
-							<TableCell>R$ {produto.preco.toFixed(2)}</TableCell>
+							<TableCell>
+								{currencyFormatter(produto.preco.toFixed(2))}
+							</TableCell>
 							<TableCell className="text-end">
 								<Button
 									variant="outline"
@@ -65,7 +70,7 @@ export default function ProductTable({
 				) : (
 					<TableRow>
 						<TableCell className="text-center" colSpan={4}>
-							Sem produtos
+							{isLoading ? "Carregando" : "Sem produtos"}
 						</TableCell>
 					</TableRow>
 				)}

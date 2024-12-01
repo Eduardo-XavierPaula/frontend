@@ -55,7 +55,7 @@ export default function ProductForm({
 				<Input
 					id="preco"
 					type="number"
-					step="0.01"
+					step="1"
 					value={formProduto.preco || ""}
 					onChange={(e) => {
 						const preco =
